@@ -42,9 +42,19 @@ class MyWebServer(socketserver.BaseRequestHandler):
         # if not a GET request return 405
         if (not headers[0].startswith("GET")):
             response = 'HTTP/1.1 405 Method Not Allowed\nContent-Type: text/html\nAllow: GET'
-            content = "<h1> 405 :( This assingment said to only support GET requests"
         else:
-            pass
+            #Get directory where request is
+            directory = headers[0].split(" ")[1]
+            directory = "." + directory  # make it relative
+            # TODO handle bad requests here and 301's here
+            try:
+                f = open(directory)
+                content = f.read()
+                f.close()
+            except FileNotFoundError as e:
+                response = 'HTTP/1.1 404 Not Found'
+
+
 
         self.request.sendall(bytearray(response + content, 'utf-8'))
 
