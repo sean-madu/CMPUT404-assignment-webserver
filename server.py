@@ -43,18 +43,44 @@ class MyWebServer(socketserver.BaseRequestHandler):
         if (not headers[0].startswith("GET")):
             response = 'HTTP/1.1 405 Method Not Allowed\nContent-Type: text/html\nAllow: GET'
         else:
-            #Get directory where request is
+            # Get directory where request is
             directory = headers[0].split(" ")[1]
-            directory = "." + directory  # make it relative
-            # TODO handle bad requests here and 301's here
+
+            print("directoryis")
+            print(directory)
+            # filter out requests from moving back
+
+            if (directory.endswith("www") or directory.endswith("deep")):
+                # use 301 to path redirect
+                newPath = directory + "/"
+                response = 'HTTP/1.1 301\nlocation: %s\nContent-Type: text/html\n\n' % newPath
+                directory = newPath
+
+                self.request.sendall(bytearray(response + content, 'utf-8'))
+
             try:
+                print(directory)
+                # Use www as the base directory
+
+                if ("www" not in directory):
+                    # directory if correct is of the form /path to a file, if not correct we will get a 404 anyway
+                    directory = "/www" + directory
+                if (directory.endswith("/")):
+                    directory += "index.html"
+
+                directory = "." + directory  # make it relative
                 f = open(directory)
+                # Serve correct mime-type
+                if (directory.endswith(".css")):
+                    response = 'HTTP/1.0 200 OK\nContent-Type: text/css\n'
+                elif (directory.endswith(".html")):
+                    response = 'HTTP/1.0 200 OK\nContent-Type: text/html\n'
                 content = f.read()
                 f.close()
-            except FileNotFoundError as e:
-                response = 'HTTP/1.1 404 Not Found'
-
-
+            except:
+                # Handle bad requests
+                print(f"{directory} not found, sending 404")
+                response = 'HTTP/1.1 404 Not Found\n\n'
 
         self.request.sendall(bytearray(response + content, 'utf-8'))
 
