@@ -32,7 +32,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
     def handle(self):
         self.data = self.request.recv(1024).strip()
         print("Got a request of: %s\n" % self.data)
-        response = 'HTTP/1.0 200 OK\r\n'
+        response = 'HTTP/1.0 200 OK\r\n\n'
         content = ''
         # decode byte array into string so we can do string operations on it
         string_data = self.data.decode('utf-8')
@@ -55,7 +55,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
             if (directory.endswith("www") or directory.endswith("deep")):
                 # use 301 to path redirect
                 newPath = directory + "/"
-                response = 'HTTP/1.1 301\nlocation: %s\ncontent-Type: text/html\r\n' % newPath
+                response = 'HTTP/1.1 301\nlocation: %s\ncontent-Type: text/html\r\n\n' % newPath
                 directory = newPath
 
                 self.request.sendall(bytearray(response + content, 'utf-8'))
@@ -74,9 +74,9 @@ class MyWebServer(socketserver.BaseRequestHandler):
                 f = open(directory)
                 # Serve correct mime-type
                 if (directory.endswith(".css")):
-                    response = 'HTTP/1.1 200 OK\r\nContent-Type: text/css\r\n'
+                    response = 'HTTP/1.1 200 OK\r\nContent-Type: text/css\r\n\n'
                 elif (directory.endswith(".html")):
-                    response = 'HTTP/1.1 200 OK\r\nContent-Type: text/html;\r\n'
+                    response = 'HTTP/1.1 200 OK\r\nContent-Type: text/html;\r\n\n'
                     print(response)
                 content = f.read()
                 f.close()
@@ -84,12 +84,12 @@ class MyWebServer(socketserver.BaseRequestHandler):
             except:
                 # Handle bad requests
                 print(f"{directory} not found, sending 404")
-                response = 'HTTP/1.1 404 Not Found\nContent-Type: text/html; charset=UTF-8\r\n'
+                response = 'HTTP/1.1 404 Not Found\nContent-Type: text/html; charset=UTF-8\r\n\n'
                 content = """
 <!DOCTYPE html>
 <html>
 <head>
-	<title>My Server 404</title>
+	<title>404 not found idk I didnt like this assingment</title>
         <meta http-equiv="Content-Type"
         content="text/html;charset=utf-8"/>
 </head>
