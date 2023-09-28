@@ -80,7 +80,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
                     print(response)
                 content = f.read()
                 f.close()
-                #print(content)
+
             except:
                 # Handle bad requests
                 print(f"{directory} not found, sending 404")
