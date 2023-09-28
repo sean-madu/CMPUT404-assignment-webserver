@@ -1,5 +1,6 @@
 #  coding: utf-8
 import socketserver
+from os.path import abspath
 
 # Copyright 2013 Abram Hindle, Eddie Antonio Santos
 #
@@ -41,27 +42,23 @@ class MyWebServer(socketserver.BaseRequestHandler):
         headers = string_data.split("\n")
         # if not a GET request return 405
         if (not headers[0].startswith("GET")):
-            response = 'HTTP/1.1 405 Method Not Allowed\nContent-Type: text/html\nAllow: GET'
+            response = 'HTTP/1.1 405 Method Not Allowed\nContent-Type: text/html\nAllow: GET\r\n\r\n'
         else:
             # Get directory where request is
             directory = headers[0].split(" ")[1]
 
-            print("directoryis")
-            print(directory)
             directory = directory.replace("../", "")
-            print(directory)
             # filter out requests from moving back
 
-            if (directory.endswith("www") or directory.endswith("deep")):
+            if (not directory.endswith("/") and not directory.endswith(".css") and not directory.endswith(".html")):
                 # use 301 to path redirect
                 newPath = directory + "/"
-                response = 'HTTP/1.1 301\nlocation: %s\ncontent-Type: text/html\r\n\n' % newPath
+                response = 'HTTP/1.1 301 Moved Permanently\nLocation: %s\ncontent-Type: text/html\n\r\n' % newPath
                 directory = newPath
 
                 self.request.sendall(bytearray(response + content, 'utf-8'))
 
             try:
-                print(directory)
                 # Use www as the base directory
 
                 if ("www" not in directory):
@@ -74,17 +71,15 @@ class MyWebServer(socketserver.BaseRequestHandler):
                 f = open(directory)
                 # Serve correct mime-type
                 if (directory.endswith(".css")):
-                    response = 'HTTP/1.1 200 OK\r\nContent-Type: text/css\r\n\n'
+                    response = 'HTTP/1.1 200 OK\nContent-Type: text/css\n\r\n'
                 elif (directory.endswith(".html")):
-                    response = 'HTTP/1.1 200 OK\r\nContent-Type: text/html;\r\n\n'
-                    print(response)
+                    response = 'HTTP/1.1 200 OK\nContent-Type: text/html;\n\r\n'
                 content = f.read()
                 f.close()
 
             except:
                 # Handle bad requests
-                print(f"{directory} not found, sending 404")
-                response = 'HTTP/1.1 404 Not Found\nContent-Type: text/html; charset=UTF-8\r\n\n'
+                response = 'HTTP/1.1 404 Not Found\nContent-Type: text/html; charset=UTF-8\n\r\n'
                 content = """
 <!DOCTYPE html>
 <html>
