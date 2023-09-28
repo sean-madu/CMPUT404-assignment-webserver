@@ -32,7 +32,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
     def handle(self):
         self.data = self.request.recv(1024).strip()
         print("Got a request of: %s\n" % self.data)
-        response = 'HTTP/1.0 200 OK\n\n'
+        response = 'HTTP/1.0 200 OK\r\n'
         content = ''
         # decode byte array into string so we can do string operations on it
         string_data = self.data.decode('utf-8')
@@ -48,12 +48,14 @@ class MyWebServer(socketserver.BaseRequestHandler):
 
             print("directoryis")
             print(directory)
+            directory = directory.replace("../", "")
+            print(directory)
             # filter out requests from moving back
 
             if (directory.endswith("www") or directory.endswith("deep")):
                 # use 301 to path redirect
                 newPath = directory + "/"
-                response = 'HTTP/1.1 301\nlocation: %s\nContent-Type: text/html\n\n' % newPath
+                response = 'HTTP/1.1 301\nlocation: %s\ncontent-Type: text/html\r\n' % newPath
                 directory = newPath
 
                 self.request.sendall(bytearray(response + content, 'utf-8'))
@@ -72,15 +74,31 @@ class MyWebServer(socketserver.BaseRequestHandler):
                 f = open(directory)
                 # Serve correct mime-type
                 if (directory.endswith(".css")):
-                    response = 'HTTP/1.0 200 OK\nContent-Type: text/css\n'
+                    response = 'HTTP/1.1 200 OK\r\nContent-Type: text/css\r\n'
                 elif (directory.endswith(".html")):
-                    response = 'HTTP/1.0 200 OK\nContent-Type: text/html\n'
+                    response = 'HTTP/1.1 200 OK\r\nContent-Type: text/html;\r\n'
+                    print(response)
                 content = f.read()
                 f.close()
+                #print(content)
             except:
                 # Handle bad requests
                 print(f"{directory} not found, sending 404")
-                response = 'HTTP/1.1 404 Not Found\n\n'
+                response = 'HTTP/1.1 404 Not Found\nContent-Type: text/html; charset=UTF-8\r\n'
+                content = """
+<!DOCTYPE html>
+<html>
+<head>
+	<title>My Server 404</title>
+        <meta http-equiv="Content-Type"
+        content="text/html;charset=utf-8"/>
+</head>
+
+<body>
+<p>This is a simple webpage saying you got a 404 error (The url could not be found) Now please give me an A+</p>
+</body>
+</html> 
+"""
 
         self.request.sendall(bytearray(response + content, 'utf-8'))
 
